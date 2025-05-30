@@ -4,7 +4,13 @@ import { ProcessoDto } from '@/dtos/processo.dto';
 import { PieChart, Pie, Cell, Tooltip, BarChart, XAxis, YAxis, Bar } from 'recharts';
 
 export default function Charts({ processos }: { processos?: ProcessoDto[] }) {
+
   const safeProcessos = Array.isArray(processos) ? processos : [];
+
+  const totalAtual = safeProcessos.reduce(
+    (soma, p) => soma + (p.valorEstimadoAtual ?? 0),
+    0
+  );
 
   const porStatus = Object.values(
     safeProcessos.reduce((acc: { [key: string]: { name: string; total: number } }, p) => {
@@ -55,8 +61,13 @@ export default function Charts({ processos }: { processos?: ProcessoDto[] }) {
 
       <div>
         <h2 className="text-lg font-semibold">Totais Financeiros</h2>
-        <p>💰 Valor depositado: R$ {totalDepositado?.toFixed(2)}</p>
-        <p>💸 Valor devolvido: R$ {totalDevolvido?.toFixed(2)}</p>
+
+        <p className="text-lg">
+          💰 Valor estimado total atualizado até hoje:{' '}
+          <strong>R$ {totalAtual.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong>
+        </p>
+        <p>Valor depositado: R$ {totalDepositado?.toFixed(2)}</p>
+        <p>Valor devolvido: R$ {totalDevolvido?.toFixed(2)}</p>
       </div>
     </div>
   );

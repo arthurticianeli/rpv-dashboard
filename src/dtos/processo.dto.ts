@@ -9,4 +9,5 @@ export interface ProcessoDto {
   dataDevolucao?: Date;
   valorDevolvido?: number;
   pago?: boolean;
+  valorEstimadoAtual?: number;
 }

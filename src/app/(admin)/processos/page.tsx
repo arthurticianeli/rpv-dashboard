@@ -6,6 +6,8 @@ import { ProcessoDto } from '@/dtos/processo.dto';
 
 export default function Page() {
   const [processos, setProcessos] = useState<ProcessoDto[]>([]);
+  const [editandoMovimentacoes, setEditandoMovimentacoes] = useState<Record<string, boolean>>({});
+
   const [filtros, setFiltros] = useState({
     status: 'todos',
     valorMin: '',
@@ -121,6 +123,27 @@ export default function Page() {
     }
   };
 
+  const iniciarEdicao = (numero: string) => {
+    setEditandoMovimentacoes((prev) => ({ ...prev, [numero]: true }));
+  };
+
+const salvarMovimentacao = async (numero: string, novaMov: string) => {
+  try {
+    const response = await fetch(`${baseURL}/processos/${numero}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ultimaMovimentacao: novaMov }),
+    });
+
+    if (!response.ok) throw new Error('Erro ao salvar');
+
+    // ✅ Sucesso: fecha edição
+    setEditandoMovimentacoes((prev) => ({ ...prev, [numero]: false }));
+  } catch (err) {
+    console.error('Erro ao atualizar movimentação:', err);
+    // ❗ Aqui você pode exibir um toast de erro, se quiser
+  }
+};
 
   return (
     <div className="p-6">
@@ -191,59 +214,121 @@ export default function Page() {
       {loading ? (
         <p>Carregando...</p>
       ) : (
-        <table className="min-w-full text-sm border-collapse">
-          <thead>
-            <tr className="bg-gray-50">
-              <th className="border p-2 text-left">Nº</th>
-              <th className="border p-2 text-left cursor-pointer" onClick={() => alternarOrdenacao('numero')}>
-                Nº Processo {ordenacao.campo === 'numero' && (ordenacao.direcao === 'asc' ? '↑' : '↓')}
-              </th>
-              <th className="border p-2 text-left cursor-pointer" onClick={() => alternarOrdenacao('requerente')}>
-                Requerente {ordenacao.campo === 'requerente' && (ordenacao.direcao === 'asc' ? '↑' : '↓')}
-              </th>
-              <th className="border p-2 text-left cursor-pointer" onClick={() => alternarOrdenacao('vara')}>
-                Vara {ordenacao.campo === 'vara' && (ordenacao.direcao === 'asc' ? '↑' : '↓')}
-              </th>
-              <th className="border p-2 text-left cursor-pointer" onClick={() => alternarOrdenacao('valorDeposito')}>
-                Valor {ordenacao.campo === 'valorDeposito' && (ordenacao.direcao === 'asc' ? '↑' : '↓')}
-              </th>
-              <th className="border p-2 text-left cursor-pointer" onClick={() => alternarOrdenacao('pago')}>
-                Pago {ordenacao.campo === 'pago' && (ordenacao.direcao === 'asc' ? '↑' : '↓')}
-              </th>
-              <th className="border p-2 text-left cursor-pointer" onClick={() => alternarOrdenacao('dataDeposito')}>
-                Data {ordenacao.campo === 'dataDeposito' && (ordenacao.direcao === 'asc' ? '↑' : '↓')}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {processosOrdenados.map((p, index) => (
-              <tr key={p.numero} className="border-t hover:bg-gray-500">
-                <td className="border p-2">{index + 1}</td>
-                <td className="border p-2">{p.numero}</td>
-                <td className="border p-2">{p.requerente}</td>
-                <td className="border p-2">{p.vara}</td>
-                <td className="border p-2">
-                  {p.valorDeposito !== undefined && p.valorDeposito !== null && !isNaN(Number(p.valorDeposito))
-                    ? `R$ ${Number(p.valorDeposito).toFixed(2)}`
-                    : '-'}
-                </td>
-                <td className="border p-2 text-center">
-                  <input
-                    type="checkbox"
-                    checked={p.pago ?? false}
-                    onChange={(e) => togglePago(p.numero, e.target.checked)}
-                  />
-                </td>
-                <td className="border p-2">
-                  {p.dataDeposito ? new Date(p.dataDeposito).toLocaleDateString('pt-BR') : '-'}
-                </td>
-                <td className="border p-2">
-                  <BotoesRequerimento numero={p.numero} />
-                </td>
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm border-collapse">
+            <thead>
+              <tr className="bg-gray-400">
+                <th className="border p-2 text-left">Nº</th>
+                <th className="border p-2 text-left cursor-pointer" onClick={() => alternarOrdenacao('numero')}>
+                  Nº Processo {ordenacao.campo === 'numero' && (ordenacao.direcao === 'asc' ? '↑' : '↓')}
+                </th>
+                <th className="border p-2 text-left cursor-pointer" onClick={() => alternarOrdenacao('requerente')}>
+                  Requerente {ordenacao.campo === 'requerente' && (ordenacao.direcao === 'asc' ? '↑' : '↓')}
+                </th>
+                <th className="border p-2 text-left cursor-pointer" onClick={() => alternarOrdenacao('vara')}>
+                  Vara {ordenacao.campo === 'vara' && (ordenacao.direcao === 'asc' ? '↑' : '↓')}
+                </th>
+                <th className="border p-2 text-left cursor-pointer" onClick={() => alternarOrdenacao('ultimaMovimentacao')}>
+                  Última Movimentação {ordenacao.campo === 'ultimaMovimentacao' && (ordenacao.direcao === 'asc' ? '↑' : '↓')}
+                </th>
+                <th className="border p-2 text-left cursor-pointer" onClick={() => alternarOrdenacao('valorDeposito')}>
+                  Valor Depósito {ordenacao.campo === 'valorDeposito' && (ordenacao.direcao === 'asc' ? '↑' : '↓')}
+                </th>
+                <th className="border p-2 text-left cursor-pointer" onClick={() => alternarOrdenacao('dataDeposito')}>
+                  Data Depósito {ordenacao.campo === 'dataDeposito' && (ordenacao.direcao === 'asc' ? '↑' : '↓')}
+                </th>
+                <th className="border p-2 text-left cursor-pointer" onClick={() => alternarOrdenacao('valorDevolvido')}>
+                  Valor Devolução {ordenacao.campo === 'valorDevolvido' && (ordenacao.direcao === 'asc' ? '↑' : '↓')}
+                </th>
+                <th className="border p-2 text-left cursor-pointer" onClick={() => alternarOrdenacao('dataDevolucao')}>
+                  Data Devolução{ordenacao.campo === 'dataDevolucao' && (ordenacao.direcao === 'asc' ? '↑' : '↓')}
+                </th>
+                <th className="border p-2 text-left cursor-pointer" onClick={() => alternarOrdenacao('pago')}>
+                  Pago {ordenacao.campo === 'pago' && (ordenacao.direcao === 'asc' ? '↑' : '↓')}
+                </th>
+                <th className="border p-2 text-left">Expedição RPV</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {processosOrdenados.map((p, index) => (
+                <tr key={p.numero} className="border-t hover:bg-gray-400">
+                  <td className="border p-2">{index + 1}</td>
+                  <td className="border p-2">{p.numero}</td>
+                  <td className="border p-2">{p.requerente}</td>
+                  <td className="border p-2">{p.vara}</td>
+                  <td className="border p-2 relative max-w-xs">
+                    {editandoMovimentacoes[p.numero] ? (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={p.ultimaMovimentacao || ''}
+                          onChange={(e) =>
+                            setProcessos((prev) =>
+                              prev.map((proc) =>
+                                proc.numero === p.numero
+                                  ? { ...proc, ultimaMovimentacao: e.target.value }
+                                  : proc
+                              )
+                            )
+                          }
+                          
+                          className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
+                          autoFocus
+                        />
+                        <button
+                          className="text-green-600 hover:text-green-800 text-sm z-10 relative cursor-pointer"
+                          title="Salvar"
+                          onClick={() => salvarMovimentacao(p.numero, p.ultimaMovimentacao)}
+                        >
+                          💾
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="truncate">{p.ultimaMovimentacao || '—'}</span>
+                        <button
+                          onClick={() => iniciarEdicao(p.numero)}
+                          className="text-gray-500 hover:text-blue-600 text-sm z-10 relative cursor-pointer"
+                          title="Editar"
+                        >
+                          ✏️
+                        </button>
+                      </div>
+                    )}
+                  </td>
+
+                  <td className="border p-2">
+                    {p.valorDeposito !== undefined && p.valorDeposito !== null && !isNaN(Number(p.valorDeposito))
+                      ? `R$ ${Number(p.valorDeposito).toFixed(2)}`
+                      : '-'}
+                  </td>
+                  <td className="border p-2">
+                    {p.dataDeposito ? new Date(p.dataDeposito).toLocaleDateString('pt-BR') : '-'}
+                  </td>
+                  <td className="border p-2">
+                    {p.valorDevolvido !== undefined && p.valorDevolvido !== null && !isNaN(Number(p.valorDevolvido))
+                      ? `R$ ${Number(p.valorDevolvido).toFixed(2)}`
+                      : '-'}
+                  </td>
+                  <td className="border p-2">
+                    {p.dataDevolucao ? new Date(p.dataDevolucao).toLocaleDateString('pt-BR') : '-'}
+                  </td>
+                  <td className="border p-2 text-center">
+                    <input
+                      type="checkbox"
+                      checked={p.pago ?? false}
+                      className='form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer'
+                      onChange={(e) => togglePago(p.numero, e.target.checked)}
+                    />
+                  </td>
+                  <td className="border p-2">
+                    <BotoesRequerimento numero={p.numero} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
