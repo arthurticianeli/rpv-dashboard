@@ -12,7 +12,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="pt-br">
       <body className="flex">
         <Sidebar />
-        <main className="ml-64 w-full min-h-screen bg-gray-700">
+        <main className="w-full min-h-screen bg-gray-50 md:ml-64 p-4">
           <ReactQueryProvider>{children}</ReactQueryProvider>
         </main>
       </body>

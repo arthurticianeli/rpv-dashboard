@@ -127,7 +127,7 @@ export default function Page() {
       <h1 className="text-2xl font-bold mb-4">Processos</h1>
 
       {/* 🔍 Filtros */}
-      <div className="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
         <div>
           <label className="block text-sm">Status</label>
           <select
@@ -191,7 +191,7 @@ export default function Page() {
       {loading ? (
         <p>Carregando...</p>
       ) : (
-        <table className="w-full border-collapse">
+        <table className="min-w-full text-sm border-collapse">
           <thead>
             <tr className="bg-gray-700">
               <th className="border p-2 text-left">Nº</th>

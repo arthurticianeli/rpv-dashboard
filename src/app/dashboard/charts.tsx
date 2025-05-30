@@ -29,8 +29,8 @@ export default function Charts({ processos }: { processos?: ProcessoDto[] }) {
 
   return (
     <div className="space-y-10">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div>
+      <div className="flex flex-col md:flex-row gap-6">
+        <div className="w-full md:w-1/2">
           <h2 className="text-lg mb-2 font-semibold">Por Status</h2>
           <PieChart width={400} height={300}>
             <Pie dataKey="total" data={porStatus} cx="50%" cy="50%" outerRadius={100} label>
@@ -42,7 +42,7 @@ export default function Charts({ processos }: { processos?: ProcessoDto[] }) {
           </PieChart>
         </div>
 
-        <div>
+        <div className="w-full md:w-1/2">
           <h2 className="text-lg mb-2 font-semibold">Por Vara</h2>
           <BarChart width={400} height={300} data={porVara}>
             <XAxis dataKey="name" />
