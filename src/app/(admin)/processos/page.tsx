@@ -134,7 +134,7 @@ export default function Page() {
             name="status"
             value={filtros.status}
             onChange={handleChange}
-            className="w-full border rounded px-2 py-1 bg-gray-700"
+            className="w-full border rounded px-2 py-1 bg-gray-50"
           >
             <option value="todos">Todos</option>
             <option value="comDeposito">Com depósito</option>
@@ -193,7 +193,7 @@ export default function Page() {
       ) : (
         <table className="min-w-full text-sm border-collapse">
           <thead>
-            <tr className="bg-gray-700">
+            <tr className="bg-gray-50">
               <th className="border p-2 text-left">Nº</th>
               <th className="border p-2 text-left cursor-pointer" onClick={() => alternarOrdenacao('numero')}>
                 Nº Processo {ordenacao.campo === 'numero' && (ordenacao.direcao === 'asc' ? '↑' : '↓')}
